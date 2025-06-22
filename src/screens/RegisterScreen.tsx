@@ -2,11 +2,12 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Text, TouchableOpacity, View } from "react-native";
 import { RootStackParamList } from "types";
+import { Container } from "~/components/Container";
 
 export default function RegisterScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
-    return <>
+    return <Container>
         <View className="flex-1 justify-center px-6 bg-white">
             <Text className="text-3xl font-bold text-center text-green-600 mb-8">Register Page</Text>
 
@@ -19,5 +20,5 @@ export default function RegisterScreen() {
                 </Text>
             </TouchableOpacity>
         </View>
-    </>
+    </Container>
 }

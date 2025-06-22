@@ -1,70 +1,99 @@
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import getDB from "lib/db";
+import { checkEmailValidity, checkPSWValidity } from "lib/utils";
 import { useState } from "react";
-import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { RootStackParamList } from "types";
+import { Container } from "~/components/Container";
+import Input from "~/components/Input";
 
 export default function LoginScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [emailError,setEmailError] = useState<null|string>(null);
+    const [passwordError,setPasswordError] = useState<null|string>(null);
 
-    const handleLogin = () => {
-        Alert.alert('Error', "This is a Test Alert!")
+    const handleLogin = async () => {
+        const emailValidity = checkEmailValidity(email);
+        const pwsValidity = checkPSWValidity(password);
+        if(emailValidity){
+            setEmailError(emailValidity);
+            setPasswordError(pwsValidity);
+            return;
+        }
+        
+        if(pwsValidity){
+            setPasswordError(pwsValidity);
+            return;
+        }
+
+        setEmailError(null);
+        setPasswordError(null);
+
+        const db = await getDB();
+        console.log('cc');
+        
+        const allRows = await db.getAllAsync('SELECT * FROM users');
+        console.log('kk');
+        
+        for (const row of allRows) {
+            console.log(row);
+        }
+
     }
 
-    return <>
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
-            <ScrollView
-                contentContainerStyle={{ flexGrow: 1 }}
-                keyboardShouldPersistTaps="handled"
+    return <Container>
+        <View className="flex-1 justify-center px-6">
+            <View className="mb-5">
+                <Image
+                    source={require('../../assets/images/finmate-logo-tp.png')}
+                    className="size-24 mb-2 self-center"
+                    resizeMode="contain"
+                />
+                <Text className="text-3xl font-bold text-center text-green-600">FinMate</Text>
+            </View>
+            <Text
+                className="text-3xl font-semibold mb-8 text-center"
             >
-                <View className="flex-1 justify-center px-6">
-                    <Image
-                        source={require('../../assets/images/finmate-logo-tp.png')}
-                        style={{ width: 100, height: 100, alignSelf: 'center', marginBottom: 24 }}
-                        resizeMode="contain"
-                    />
-                    <Text className="text-3xl font-bold text-center text-green-600 mb-8">FinMate</Text>
-                    <Text>Welcome back {email}!</Text>
-                    <TextInput
-                        className="border border-gray-300 rounded-lg p-3 mb-4"
-                        placeholder="Email"
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                    />
-                    <TextInput
-                        className="border border-gray-300 rounded-lg p-3 mb-6"
-                        placeholder="Password"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                    <TextInput
-                        className="border border-gray-300 rounded-lg p-3 mb-6"
-                        placeholder="Password"
-                        secureTextEntry
-                    />
-                    <TouchableOpacity
-                        onPress={handleLogin}
-                        className="bg-green-600 py-3 rounded-lg"
-                    >
-                        <Text className="text-white text-center text-lg font-semibold">Login</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Register')}
-                        className="mt-4"
-                    >
-                        <Text className="text-center text-gray-500">
-                            Don&apos;t have an account? <Text className="text-green-600">Register</Text>
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
-    </>
+                Welcome back!
+            </Text>
+            <Input
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                error={emailError}
+            />
+            <Input
+                placeholder="Password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                error={passwordError}
+            />
+            <TouchableOpacity
+                onPress={handleLogin}
+                className="bg-green-600 py-3 rounded-lg"
+            >
+                <Text className="text-white text-center text-lg font-semibold">Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('Register')}
+                className="mt-4"
+            >
+                <Text className="text-center text-gray-500 text-lg">
+                    Don&apos;t have an account? <Text className="text-green-600">Register</Text>
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('ContactList')}
+                className="mt-4"
+            >
+                <Text className="text-center text-green-600 text-lg p-1">
+                    Go to Contact List
+                </Text>
+            </TouchableOpacity>
+        </View>
+    </Container>
 }

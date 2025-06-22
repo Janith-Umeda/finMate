@@ -1,6 +1,16 @@
-import { SafeAreaView } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, } from 'react-native';
 
 export const Container = ({ children }: { children: React.ReactNode }) => {
-  return <SafeAreaView className="flex flex-1 m-6" >{children}</SafeAreaView>;
+  return <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+  >
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      {children}
+    </ScrollView>
+  </KeyboardAvoidingView>
 };
 
