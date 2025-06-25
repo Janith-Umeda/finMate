@@ -1,14 +1,14 @@
 import getDB from "lib/db";
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Keyboard, Linking, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Contact } from "types";
-import { Container } from "~/components/Container";
 import Input from "~/components/Input";
 
 export default function ContactListScreen() {
     const [contactName, setContactName] = useState<string | undefined>(undefined);
     const [contactNo, setContactNo] = useState<string | undefined>(undefined);
     const [contactsData, setContactsData] = useState<Contact[]>([]);
+    const [editContact, setEditContact] = useState<Contact | null>(null);
 
     const handleContactAdd = async () => {
         if (!contactName || !contactNo) {
@@ -17,15 +17,19 @@ export default function ContactListScreen() {
         }
         const db = await getDB();
         try {
-            const res = await db.runAsync(`INSERT INTO contacts (contactName, contactTel) VALUES (?,?)`, [contactName, contactNo]);
+            const res = await db.runAsync(
+                `INSERT INTO contacts (contactName, contactTel) VALUES (?,?)`,
+                [contactName, contactNo]
+            );
             if (!res.changes) {
                 return;
             }
+            Keyboard.dismiss();
             setContactName(undefined);
             setContactNo(undefined);
             fetchContacts();
         } catch (error) {
-            console.error(error);
+            console.error('handleContactAdd : ', error);
         }
     }
 
@@ -45,6 +49,15 @@ export default function ContactListScreen() {
         const db = await getDB();
         const contacts = await db.getAllAsync('SELECT * FROM contacts ORDER BY id DESC');
         setContactsData(contacts as Contact[]);
+    }
+
+    const makeACall = (contact: Contact) => {
+        const phoneNumber = contact.contactTel;
+        const url = `tel:${phoneNumber}`;
+        Linking.openURL(url).catch(err => {
+            Alert.alert('Error', 'Unable to make a call');
+            console.error('makeACall:', err);
+        });
     }
 
     useEffect(() => {
@@ -77,21 +90,73 @@ export default function ContactListScreen() {
             <ScrollView className="max-h-96 mt-3">
                 <View className="flex gap-4">
                     {contactsData.map((c, _) => (
-                        <View key={c.id} className="border border-gray-300 rounded py-2 px-3 shadow bg-white flex flex-row items-center justify-between">
+                        <TouchableOpacity
+                            onPress={() => { makeACall(c) }}
+                            key={c.id}
+                            className="border border-gray-300 rounded py-2 px-3 shadow bg-white flex flex-row items-center justify-between"
+                        >
                             <View>
                                 <Text className="text-2xl text-gray-800">{c.contactName}</Text>
                                 <Text className="text-3xl mt-2">{c.contactTel}</Text>
                             </View>
-                            <TouchableOpacity
-                                onPress={()=>handleContactDelete(c.id)}
-                                className="bg-red-600 py-3 rounded-lg w-16"
-                            >
-                                <Text className="text-white text-center text-lg font-semibold">Delete</Text>
-                            </TouchableOpacity>
-                        </View>
+                            <View className="flex flex-row items-center gap-2">
+                                <TouchableOpacity
+                                    onPress={() => setEditContact(c)}
+                                    className="bg-yellow-500 py-3 rounded-lg w-16"
+                                >
+                                    <Text className="text-white text-center text-lg font-semibold">Edit</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => handleContactDelete(c.id)}
+                                    className="bg-red-600 py-3 rounded-lg w-16"
+                                >
+                                    <Text className="text-white text-center text-lg font-semibold">Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
                     ))}
                 </View>
             </ScrollView>
+            <ContactEditModal selectedContact={editContact} setEditContact={setEditContact}/>
         </View>
     </>
+}
+
+type ContactEditModalProps = {
+    selectedContact: Contact | null;
+    setEditContact: React.Dispatch<React.SetStateAction<Contact | null>>
+}
+
+function ContactEditModal({ selectedContact, setEditContact }: ContactEditModalProps) {
+    return <View className={`absolute h-screen w-screen ${selectedContact ? 'flex' : 'hidden'} items-center justify-center bg-black/40`}>
+        <View className="w-3/4 h-2/5 bg-white rounded-md shadow-md flex flex-col justify-between">
+            <View className="border-b border-b-black/40 px-5 py-4">
+                <Text className="text-2xl font-semibold">
+                    Edit Contact {selectedContact?.contactName}
+                </Text>
+            </View>
+            <View>
+                <Input 
+                    value={selectedContact?.contactName}
+                />
+                <Input 
+                    value={selectedContact?.contactTel}
+                    type="number-pad"
+                />
+            </View>
+            <View className="w-full flex flex-row items-center justify-between p-4">
+                <TouchableOpacity
+                    onPress={()=>setEditContact(null)}
+                    className="bg-gray-500 py-3 rounded-lg w-32"
+                >
+                    <Text className="text-white text-center text-lg font-semibold">Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    className="bg-green-600 py-3 rounded-lg w-32"
+                >
+                    <Text className="text-white text-center text-lg font-semibold">Save</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    </View>
 }

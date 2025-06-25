@@ -1,7 +1,15 @@
 import * as SQLite from 'expo-sqlite';
 
+let db: Promise<SQLite.SQLiteDatabase> | null = null;
+
 async function getDB(): Promise<SQLite.SQLiteDatabase> {
-    return await SQLite.openDatabaseAsync('databaseName');
+    return SQLite.openDatabaseAsync('databaseName');
+    // if(!db){ 
+
+    //     return db
+    // }
+
+    // return db
 }
 
 async function migrate() {
@@ -33,9 +41,9 @@ async function migrate() {
         CREATE TABLE IF NOT EXISTS contacts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             contactName TEXT,
-            contactTel INTEGER
-        );`
-    );
+            contactTel TEXT
+        );
+    `);
 }
 
 export default getDB;
