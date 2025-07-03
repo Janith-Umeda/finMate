@@ -4,7 +4,7 @@ import getDB from "lib/db";
 import { checkEmailValidity, checkPSWValidity } from "lib/utils";
 import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import { RootStackParamList } from "types";
+import { RootStackParamList, User } from "types";
 import { Container } from "~/components/Container";
 import Input from "~/components/Input";
 
@@ -16,32 +16,35 @@ export default function LoginScreen() {
     const [passwordError,setPasswordError] = useState<null|string>(null);
 
     const handleLogin = async () => {
-        const emailValidity = checkEmailValidity(email);
-        const pwsValidity = checkPSWValidity(password);
-        if(emailValidity){
-            setEmailError(emailValidity);
-            setPasswordError(pwsValidity);
-            return;
+        try{
+            const emailValidity = checkEmailValidity(email);
+            const pwsValidity = checkPSWValidity(password);
+            if(emailValidity){
+                setEmailError(emailValidity);
+                setPasswordError(pwsValidity);
+                return;
+            }
+            
+            if(pwsValidity){
+                setPasswordError(pwsValidity);
+                return;
+            }
+    
+            setEmailError(null);
+            setPasswordError(null);
+    
+            const db = await getDB();
+            const user = await db.getFirstAsync('SELECT * FROM users WHERE email = ?', [email]) as User;
+    
+            if(!user){
+                setEmailError("Wrong Email!");
+                setPasswordError("Wrong Password!");
+                return;
+            }
+            navigation.navigate("Dashboard", user);
+        }catch(e){
+            console.error('handleLogin: ', e);
         }
-        
-        if(pwsValidity){
-            setPasswordError(pwsValidity);
-            return;
-        }
-
-        setEmailError(null);
-        setPasswordError(null);
-
-        const db = await getDB();
-        console.log('cc');
-        
-        const allRows = await db.getAllAsync('SELECT * FROM users');
-        console.log('kk');
-        
-        for (const row of allRows) {
-            console.log(row);
-        }
-
     }
 
     return <Container>

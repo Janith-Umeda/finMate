@@ -18,6 +18,7 @@ async function migrate() {
     await db.runAsync(`
         CREATE TABLE IF NOT EXISTS users (
             userId INTEGER PRIMARY KEY AUTOINCREMENT,
+            userName TEXT,
             email TEXT UNIQUE,
             password TEXT
         );
