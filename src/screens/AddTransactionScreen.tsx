@@ -52,16 +52,14 @@ export default function AddTransactionScreen(){
 
             <View className="flex-row justify-around mb-3">
                 <TouchableOpacity
-                    className={`px-4 py-2 rounded-full border ${type === 'income' ? 'bg-green-600' : 'bg-white'
-                        }`}
+                    className={`px-4 py-2 rounded-md border ${type === 'income' ? 'bg-green-600' : 'bg-green-50 border-green-500'}`}
                     onPress={() => setType('income')}
                 >
                     <Text className={type === 'income' ? 'text-white' : 'text-green-600'}>Income</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    className={`px-4 py-2 rounded-full border ${type === 'expense' ? 'bg-red-600' : 'bg-white'
-                        }`}
+                    className={`px-4 py-2 rounded-md border ${type === 'expense' ? 'bg-red-600' : 'bg-red-50 border-red-500'}`}
                     onPress={() => setType('expense')}
                 >
                     <Text className={type === 'expense' ? 'text-white' : 'text-red-600'}>Expense</Text>

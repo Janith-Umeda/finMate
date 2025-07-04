@@ -23,7 +23,7 @@ export default function DashboardScreen() {
         let income = 0;
         let expense = 0;
 
-        results.forEach((tx)=>{
+        results.forEach((tx) => {
             if (tx.type === 'income') {
                 income += tx.amount;
             } else {
@@ -76,17 +76,24 @@ export default function DashboardScreen() {
             <Text className="text-lg font-semibold mb-2">Recent Transactions</Text>
             <ScrollView className="space-y-3">
                 {transactions.slice(0, 5).map(tx => (
-                    <View
+                    <TransactionRow 
                         key={tx.id}
-                        className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex-row justify-between mb-3"
-                    >
-                        <Text className="capitalize">{tx.category} ({tx.type})</Text>
-                        <Text className={tx.type === 'income' ? 'text-green-600' : 'text-red-600'}>
-                            Rs. {tx.amount}
-                        </Text>
-                    </View>
+                        transaction={tx}
+                    />
                 ))}
             </ScrollView>
         </View>
     );
 };
+
+function TransactionRow({transaction}:{transaction:Transactions}) {
+    return <View
+        key={transaction.id}
+        className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex-row justify-between mb-3"
+    >
+        <Text className="capitalize">{transaction.category} ({transaction.type})</Text>
+        <Text className={transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+            Rs. {transaction.amount}
+        </Text>
+    </View>
+}
